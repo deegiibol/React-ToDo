@@ -16,11 +16,7 @@
         <div id="root"></div>
 
         <script type="text/babel">
-            const todos = [
-                {id: '1', title: 'Task 1', isDone: false},
-                {id: '2', title: 'Task 2', isDone: false},
-                {id: '3', title: 'Task 3', isDone: true},
-            ];
+            const todos = [];
 
             function TodoItem(props){
                 return (
@@ -51,20 +47,36 @@
 
                 return(
                     <ul>
-                        {todos}
+                        {props.todos.length ? todos : <li>Noting to do!</li>}
                     </ul>
                 );
+            }
+
+            function TodoForm(props){
+                return(
+                    <form onSubmit={props.addTodo}>
+                        <input type="text" value={props.item} onChange={props.updateItem}/>
+                        <input type="submit" value="Add"/>
+                    </form>
+                );
+            }
+
+            function getUniqueId(){
+                return new Date().getTime().toString(36) + '-' + Math.random().toString(36);
             }
 
             class App extends React.Component{
                 constructor() {
                     super();
                     this.state = {
-                        todos: todos
+                        todos: todos,
+                        item: ''
                     };
                     this.checkTodo = this.checkTodo.bind(this);
                     this.deleteTodo = this.deleteTodo.bind(this);
-                }
+                    this.updateItem = this.updateItem.bind(this);
+                    this.addTodo = this.addTodo.bind(this);
+                } 
 
                 checkTodo(td){
                     const todos = this.state.todos.map(todo => {
@@ -77,9 +89,34 @@
                 }
 
                 deleteTodo(id){
+                    if(!confirm('Are your sure?')) return;
+
                     const todos = this.state.todos.filter(todo => todo.id != id);
 
                     this.setState({todos: todos});
+                }
+
+                updateItem(e){
+                    this.setState({
+                        item: e.target.value
+                    })
+                }
+
+                addTodo(e){
+                    e.preventDefault();
+
+                    const item = {
+                        id: getUniqueId(),
+                        title: this.state.item,
+                        isDone: false
+                    };
+
+                    const todos = this.state.todos.slice();
+                    todos.push(item);
+                    this.setState({
+                        todos: todos,
+                        item: ''
+                    });
                 }
 
                 render(){
@@ -90,6 +127,11 @@
                                 todos={this.state.todos}
                                 checkTodo={this.checkTodo}
                                 deleteTodo={this.deleteTodo}
+                            />
+                            <TodoForm
+                                item={this.state.item}
+                                updateItem={this.updateItem}
+                                addTodo={this.addTodo}
                             />
                         </div>
                     );
